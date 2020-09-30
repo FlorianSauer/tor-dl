@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+if ! pgrep -x "tor" > /dev/null
+then
+    service tor start
+fi
+torsocks -i youtube-dl -v --no-call-home -F $1

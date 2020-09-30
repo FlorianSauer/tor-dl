@@ -1,0 +1,89 @@
+#!/usr/bin/env bash
+set -e
+
+echoerr() { echo "$@" 1>&2; }
+curl_url()
+{
+    i=0
+    while [ $i -lt 5 ]
+    do
+        ((i++))
+        data=$(curl -s $1)
+        if [ -n "$data" ]; then
+            break
+        fi
+        echoerr "Download attempt Number: $i failed"
+    done
+    if [ -z "$data" ]; then
+        echoerr "no data received!"
+        exit 1
+    fi
+    echo $data
+}
+
+torsocks_curl_url()
+{
+#    echo "curl" "$( echo $1 | sed 's/ /%20/g' )"
+    i=0
+    while [ $i -lt 5 ]
+    do
+        ((i++))
+        data=$(torsocks curl -s $1)
+        if [ -n "$data" ]; then
+            break
+        fi
+        echoerr "Download attempt Number: $i failed"
+    done
+    if [ -z "$data" ]; then
+        echoerr "no data received!"
+        exit 1
+    fi
+    echo $data
+}
+
+
+
+
+
+if ! pgrep -x "tor" > /dev/null
+then
+    service tor start
+fi
+
+echo "This script will test if your tor proxy is correctly running. It uses curl and torsocks+curl for tests."
+echo "First check and second/third Check MUST be different"
+echo "Second check and third check CAN be different. If they are different, both checks were sent over different Tor circuits."
+public_ip=$(curl_url http://ip.42.pl/raw)
+echo "---without torsocks environment---"
+echo "Your public IP address appears to be:" $public_ip
+echo "---with torsocks environment---"
+
+tor_ip2=$(torsocks_curl_url http://ip.42.pl/raw)
+echo "Your Tor-IP address appears to be (by using same method as for public ip):" $tor_ip2
+if [ "$public_ip" == "$tor_ip" ]; then
+    echo "first check and second check are the same, tor not in use!!!"
+    exit 1
+else
+    echo "first check and second check are not the same, torsocks + curl (ip.42.pl) works"
+fi
+
+# check.torproject did not work once, using ip.42.pl two times, should give two different ips
+#tor_ip=$(torsocks_curl_url "https://check.torproject.org/" 2> /dev/null | grep "Your IP address appears to be" | awk -F '<strong>' '{print $2}' | awk -F '</strong>' '{print $1}')
+#echo "Your Tor-IP address appears to be (by using tor website):" $tor_ip
+#if [ "$public_ip" == "$tor_ip2" ]; then
+#    echo "first check and third check are the same, tor not in use!!!"
+#    exit 1
+#else
+#    echo "first check and third check are not the same, torsocks + curl (TOR-website) works"
+#fi
+
+tor_ip=$(torsocks_curl_url http://ip.42.pl/raw)
+echo "Your Tor-IP address appears to be (by using ip.42.pl):" $tor_ip
+if [ "$public_ip" == "$tor_ip2" ]; then
+    echo "first check and third check are the same, tor not in use!!!"
+    exit 1
+else
+    echo "first check and third check are not the same, torsocks + curl (ip.42.pl) works"
+fi
+
+

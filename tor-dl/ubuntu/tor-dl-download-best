@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+if ! pgrep -x "tor" > /dev/null
+then
+    service tor start
+fi
+
+if [ ! -z "$download_rate" ]; then
+	export download_rate="-r $download_rate"
+fi
+
+torsocks -i youtube-dl -v --no-call-home -k $download_rate --recode-video mp4 -f best $1

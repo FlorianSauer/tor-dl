@@ -1,0 +1,2 @@
+Add support for downloading livestreams.
+(https://stackoverflow.com/questions/37040798/how-do-you-use-youtube-dl-to-download-live-streams-that-are-live)

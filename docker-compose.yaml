@@ -1,0 +1,15 @@
+version: '3.5'
+services:
+  tor-dl:
+    build:
+      context: tor-dl/ubuntu
+    environment:
+      # restricts exit nodes to nodes that are from germany
+      exit_nodes: "{de}"
+      # Maximum download rate in bytes per second (e.g. 50K or 4.2M)
+      download_rate: "2M"
+
+    volumes:
+      - ./env:/out:rw
+    env_file:
+      - .env
