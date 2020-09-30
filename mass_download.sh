@@ -8,7 +8,6 @@ else
     config_file=$1
 fi
 
-#for line in $(cat $config_file); do
 while IFS='' read -r line || [ -n "${line}" ]; do
     # check if line is a file or a dir
     if [[ $line == \#* ]] || [[ $line == \;* ]] ; then
